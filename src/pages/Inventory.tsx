@@ -18,6 +18,7 @@ export const Inventory = () => {
   const [importPrice, setImportPrice] = useState(0); // For IN
   const [importCurrency, setImportCurrency] = useState<'VND' | 'JPY'>('VND');
   const [discount, setDiscount] = useState(0); // For OUT
+  const [discountCurrency, setDiscountCurrency] = useState<'VND' | 'JPY'>('VND');
 
   const selectedProduct = products.find(p => p.id === selectedProductId);
   const selectedVariant = selectedProduct?.variants.find(v => v.id === selectedVariantId);
@@ -33,8 +34,7 @@ export const Inventory = () => {
     if (!selectedVariant) return 0;
     const subtotal = selectedVariant.price * quantity;
     // Allow applying discount in either currency, but save in VND
-    // For simplicity, input discount is in VND if currency is VND, JPY if currency is JPY
-    const discountInVnd = currency === 'JPY' ? discount * config.exchangeRate : discount;
+    const discountInVnd = discountCurrency === 'JPY' ? discount * config.exchangeRate : discount;
     return Math.max(0, subtotal - discountInVnd);
   };
 
@@ -52,7 +52,7 @@ export const Inventory = () => {
       }
     }
 
-    const discountInVnd = currency === 'JPY' ? discount * config.exchangeRate : discount;
+    const discountInVnd = discountCurrency === 'JPY' ? discount * config.exchangeRate : discount;
     const importPriceInVnd = importCurrency === 'JPY' ? importPrice * config.exchangeRate : importPrice;
 
     const transaction: Transaction = {
@@ -171,11 +171,22 @@ export const Inventory = () => {
                 
                 {activeTab === 'OUT' && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Chiết khấu ({currency})</label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">Chiết khấu</label>
+                      <select 
+                        className="text-xs border rounded px-1 py-0.5 bg-muted"
+                        value={discountCurrency}
+                        onChange={(e) => setDiscountCurrency(e.target.value as 'VND' | 'JPY')}
+                      >
+                        <option value="VND">VND</option>
+                        <option value="JPY">JPY</option>
+                      </select>
+                    </div>
                     <Input 
                       type="number" min="0" 
                       value={discount} 
                       onChange={e => setDiscount(Number(e.target.value))} 
+                      placeholder={`Nhập chiết khấu theo ${discountCurrency}`}
                     />
                   </div>
                 )}
