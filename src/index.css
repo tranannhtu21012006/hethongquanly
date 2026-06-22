@@ -131,4 +131,10 @@
     animation: gradient-xy 3s ease infinite;
     background-size: 400% 400%;
   }
+
+  /* Slide Down Animation for Greeting */
+  @keyframes slideDown {
+    0% { opacity: 0; transform: translateY(-40px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
 }
