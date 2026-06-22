@@ -60,20 +60,26 @@ export const AppLayout = () => {
           })}
         </nav>
         <div className="p-4 border-t bg-muted/10">
-          <div className="flex items-center gap-3 mb-4 p-2 rounded-xl border-none shadow-md relative overflow-hidden group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 animate-gradient-xy opacity-80"></div>
-            <div className="absolute inset-[1px] bg-background/60 backdrop-blur-md rounded-[11px] transition-colors group-hover:bg-background/40"></div>
+          <div className="flex items-center gap-3 mb-4 p-3 rounded-2xl relative overflow-hidden group cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-500/20">
+            {/* Animated glowing border effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-teal-500 to-green-500 animate-gradient-xy opacity-70"></div>
+            {/* Inner dark container */}
+            <div className="absolute inset-[2px] bg-background/95 backdrop-blur-xl rounded-[14px] z-0 transition-colors group-hover:bg-background/90"></div>
+            
             <div className="relative flex items-center gap-3 w-full z-10">
               {config.avatarUrl ? (
-                <img src={config.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/20" />
+                <img src={config.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500/30" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold ring-2 ring-primary/30">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold border-2 border-emerald-500/30">
                   {config.ownerName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-bold truncate text-foreground">{config.nickname || config.ownerName}</p>
-                <p className="text-xs text-foreground/70 truncate font-medium">Administrator</p>
+                <p className="text-sm font-bold truncate text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{config.nickname || config.ownerName}</p>
+                <p className="text-xs text-muted-foreground truncate font-medium">Administrator</p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/><path d="m18 9-6-6-6 6"/></svg>
               </div>
             </div>
           </div>

@@ -34,14 +34,14 @@ export const Effects = () => {
     <>
       {/* Background Blobs */}
       <div className="fixed inset-0 z-[-2] overflow-hidden bg-background pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-primary/20 blur-[100px] animate-blob mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute top-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-blue-400/20 blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute bottom-[-20%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-pink-400/20 blur-[100px] animate-blob animation-delay-4000 mix-blend-multiply dark:mix-blend-screen" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-emerald-300/30 blur-[100px] animate-blob" />
+        <div className="absolute top-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-[#f5e6d3]/60 blur-[100px] animate-blob animation-delay-2000" />
+        <div className="absolute bottom-[-20%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-green-200/30 blur-[100px] animate-blob animation-delay-4000" />
       </div>
 
       {/* Trailing Cursor Soft Glow */}
       <div
-        className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden transition-opacity duration-300"
+        className="pointer-events-none fixed inset-0 z-[50] overflow-hidden transition-opacity duration-300"
       >
         <div
           className="absolute rounded-full blur-[80px] bg-primary/30 transition-transform duration-75 ease-out"
@@ -56,9 +56,9 @@ export const Effects = () => {
       {/* Ripple Effect Container */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-[9999]">
         {ripples.map((r) => (
-          <span
+          <div
             key={r.id}
-            className="absolute rounded-full bg-primary/40 animate-ripple"
+            className="absolute rounded-full bg-emerald-500/30 animate-ripple"
             style={{
               left: r.x,
               top: r.y,
