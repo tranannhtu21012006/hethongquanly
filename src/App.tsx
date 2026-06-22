@@ -8,6 +8,8 @@ import { Inventory } from '@/pages/Inventory';
 import { Settings } from '@/pages/Settings';
 import { useAppStore } from '@/store/useAppStore';
 
+import { Effects } from '@/components/ui/Effects';
+
 function App() {
   const fetchAllData = useAppStore((s) => s.fetchAllData);
   const isLoading = useAppStore((s) => s.isLoading);
@@ -28,17 +30,20 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="products" element={<Products />} />
-          <Route path="inventory" element={<Inventory />} />
-          <Route path="settings" element={<Settings />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <>
+      <Effects />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
