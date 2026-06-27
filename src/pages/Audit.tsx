@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,22 +13,27 @@ export const Audit = () => {
   const [activeTab, setActiveTab] = useState<'NEW' | 'HISTORY'>('NEW');
   const [note, setNote] = useState('');
   
-  // Initialize draft items with current stock
-  const [draftItems, setDraftItems] = useState<InventoryCheckItem[]>(() => {
-    const items: InventoryCheckItem[] = [];
-    products.forEach(p => {
-      p.variants.forEach(v => {
-        items.push({
-          productId: p.id,
-          variantId: v.id,
-          expectedStock: v.stock,
-          actualStock: v.stock,
-          diff: 0
+  // Initialize draft items with current stock (re-sync khi products tải xong)
+  const [draftItems, setDraftItems] = useState<InventoryCheckItem[]>([]);
+
+  useEffect(() => {
+    if (products.length === 0) return;
+    setDraftItems(() => {
+      const items: InventoryCheckItem[] = [];
+      products.forEach(p => {
+        p.variants.forEach(v => {
+          items.push({
+            productId: p.id,
+            variantId: v.id,
+            expectedStock: v.stock,
+            actualStock: v.stock,
+            diff: 0
+          });
         });
       });
+      return items;
     });
-    return items;
-  });
+  }, [products]);
 
   const [selectedHistory, setSelectedHistory] = useState<InventoryCheck | null>(null);
 
