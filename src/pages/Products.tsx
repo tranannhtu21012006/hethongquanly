@@ -311,7 +311,7 @@ export const Products = () => {
                   <div key={idx} className="flex gap-2 items-center animate-in slide-in-from-left-2">
                     <Input placeholder="Size (S, M...)" value={v.size} onChange={e => handleVariantChange(idx, 'size', e.target.value)} required />
                     <Input placeholder="Màu sắc" value={v.color} onChange={e => handleVariantChange(idx, 'color', e.target.value)} required />
-                    <Input type="number" placeholder="Giá bán (VND)" value={v.price || ''} onChange={e => handleVariantChange(idx, 'price', Number(e.target.value))} required />
+                    <Input type="number" placeholder="Giá bán (JPY)" value={v.price || ''} onChange={e => handleVariantChange(idx, 'price', Number(e.target.value))} required />
                     <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveVariantRow(idx)} disabled={variants.length === 1}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
