@@ -10,7 +10,7 @@ import {
   Store
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const AppLayout = () => {
   const { auth, logout, config } = useAppStore();
@@ -97,10 +97,24 @@ export const AppLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-transparent">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-transparent relative">
         {/* Mobile Header here if needed */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <Outlet />
+        <div className="flex-1 relative overflow-hidden">
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={{ y: 60, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -40, opacity: 0, scale: 0.95 }}
+              transition={{ 
+                duration: 0.5, 
+                ease: [0.22, 1, 0.36, 1] 
+              }}
+              className="absolute inset-0 overflow-y-auto p-4 md:p-8 custom-scrollbar"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
     </motion.div>
