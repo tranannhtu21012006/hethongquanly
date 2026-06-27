@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Plus, Trash2, PackageSearch, Upload, ChevronDown, ChevronUp, AlertTriangle, Settings2, X } from 'lucide-react';
 
 export const Products = () => {
-  const { products, addProduct, deleteProduct, currency, config, categories, addCategory, deleteCategory } = useAppStore();
+  const { products, addProduct, deleteProduct, updateProduct, currency, config, categories, addCategory, deleteCategory } = useAppStore();
   
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -306,7 +306,7 @@ export const Products = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium block">Danh sách Biến thể (Size/Màu) *</label>
+                <label className="text-sm font-medium block">Danh sách Size/Màu *</label>
                 {variants.map((v, idx) => (
                   <div key={idx} className="flex gap-2 items-center animate-in slide-in-from-left-2">
                     <Input placeholder="Size (S, M...)" value={v.size} onChange={e => handleVariantChange(idx, 'size', e.target.value)} required />
@@ -422,34 +422,81 @@ export const Products = () => {
                   {/* Expanded Variants Table */}
                   {isExpanded && (
                     <div className="px-4 pb-4 sm:px-5 sm:pb-5">
-                      <div className="ml-0 sm:ml-20 bg-background rounded-lg border overflow-hidden">
-                        <table className="w-full text-sm text-left">
-                          <thead className="bg-muted/50 text-xs text-muted-foreground uppercase">
-                            <tr>
-                              <th className="px-4 py-2">Size</th>
-                              <th className="px-4 py-2">Màu sắc</th>
-                              <th className="px-4 py-2 text-right">Giá bán</th>
-                              <th className="px-4 py-2 text-right">Tồn kho</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {displayVariants.map(variant => {
-                              const isOutOfStock = variant.stock <= 0;
-                              return (
-                                <tr key={variant.id} className={`border-t ${isOutOfStock ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
-                                  <td className={`px-4 py-2 font-medium ${isOutOfStock ? 'text-destructive' : ''}`}>{variant.size}</td>
-                                  <td className={`px-4 py-2 ${isOutOfStock ? 'text-destructive' : ''}`}>{variant.color}</td>
-                                  <td className="px-4 py-2 text-right font-medium text-primary">{displayPrice(variant.price)}</td>
-                                  <td className="px-4 py-2 text-right">
-                                    <span className={`inline-flex items-center justify-center font-bold px-2 py-0.5 rounded ${isOutOfStock ? 'bg-destructive/10 text-destructive' : 'bg-muted text-foreground'}`}>
-                                      {variant.stock}
-                                    </span>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
+                      <div className="ml-0 sm:ml-20 space-y-3">
+                        {/* Image update section */}
+                        <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-dashed">
+                          <div className="w-14 h-14 shrink-0 rounded-md border overflow-hidden bg-muted flex items-center justify-center">
+                            {product.imageUrl ? (
+                              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[9px] text-muted-foreground text-center leading-tight px-1">No Image</span>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs text-muted-foreground mb-1.5">Ảnh sản phẩm</p>
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium px-3 py-1.5 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground border transition-colors">
+                              <Upload className="h-3.5 w-3.5" />
+                              {product.imageUrl ? 'Đổi ảnh' : 'Tải ảnh lên'}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    const img = new Image();
+                                    img.onload = () => {
+                                      const canvas = document.createElement('canvas');
+                                      const MAX = 400;
+                                      let w = img.width, h = img.height;
+                                      if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                                      else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                                      canvas.width = w; canvas.height = h;
+                                      canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+                                      updateProduct(product.id, { imageUrl: canvas.toDataURL('image/jpeg', 0.7) });
+                                    };
+                                    img.src = event.target?.result as string;
+                                  };
+                                  reader.readAsDataURL(file);
+                                  e.target.value = '';
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Variants table */}
+                        <div className="bg-background rounded-lg border overflow-hidden">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-muted/50 text-xs text-muted-foreground uppercase">
+                              <tr>
+                                <th className="px-4 py-2">Size</th>
+                                <th className="px-4 py-2">Màu sắc</th>
+                                <th className="px-4 py-2 text-right">Giá bán</th>
+                                <th className="px-4 py-2 text-right">Tồn kho</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {displayVariants.map(variant => {
+                                const isOutOfStock = variant.stock <= 0;
+                                return (
+                                  <tr key={variant.id} className={`border-t ${isOutOfStock ? 'bg-red-50/50 dark:bg-red-900/10' : ''}`}>
+                                    <td className={`px-4 py-2 font-medium ${isOutOfStock ? 'text-destructive' : ''}`}>{variant.size}</td>
+                                    <td className={`px-4 py-2 ${isOutOfStock ? 'text-destructive' : ''}`}>{variant.color}</td>
+                                    <td className="px-4 py-2 text-right font-medium text-primary">{displayPrice(variant.price)}</td>
+                                    <td className="px-4 py-2 text-right">
+                                      <span className={`inline-flex items-center justify-center font-bold px-2 py-0.5 rounded ${isOutOfStock ? 'bg-destructive/10 text-destructive' : 'bg-muted text-foreground'}`}>
+                                        {variant.stock}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
                   )}
