@@ -3,13 +3,36 @@ import { useAppStore } from '@/store/useAppStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, Upload, Save, Check } from 'lucide-react';
+import { Download, Upload, Save, Check, User } from 'lucide-react';
 
 export const Settings = () => {
   const { config, updateConfig, exportData, importData } = useAppStore();
   const [formData, setFormData] = useState(config);
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 300;
+        let w = img.width, h = img.height;
+        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+        else { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+        setFormData(prev => ({ ...prev, avatarUrl: canvas.toDataURL('image/jpeg', 0.8) }));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -80,8 +103,39 @@ export const Settings = () => {
               <Input name="nickname" value={formData.nickname} onChange={handleChange} />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Link Ảnh Đại diện (URL)</label>
-              <Input name="avatarUrl" value={formData.avatarUrl} onChange={handleChange} />
+              <label className="text-sm font-medium">Ảnh Đại diện</label>
+              <div className="flex items-center gap-3">
+                {/* Preview */}
+                <div className="w-16 h-16 shrink-0 rounded-full border-2 border-border overflow-hidden bg-muted flex items-center justify-center">
+                  {formData.avatarUrl ? (
+                    <img src={formData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="h-7 w-7 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 flex-1">
+                  {/* Upload from device */}
+                  <label className="inline-flex items-center justify-center gap-2 cursor-pointer text-sm font-medium h-9 px-4 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground border transition-colors w-full">
+                    <Upload className="h-4 w-4" />
+                    {formData.avatarUrl ? 'Đổi ảnh từ máy' : 'Tải ảnh lên từ máy'}
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                  </label>
+                  {/* Or paste URL */}
+                  <Input
+                    name="avatarUrl"
+                    value={formData.avatarUrl.startsWith('data:') ? '' : formData.avatarUrl}
+                    onChange={handleChange}
+                    placeholder="Hoặc dán link URL ảnh..."
+                    className="text-xs"
+                  />
+                </div>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Tỉ giá JPY sang VND</label>
