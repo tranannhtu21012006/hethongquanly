@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Store } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import $ from 'jquery';
 
 if (typeof window !== 'undefined') {
@@ -16,6 +17,8 @@ export const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isRippling, setIsRippling] = useState(false);
+  const clickPosRef = useRef({ x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0, y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0 });
   const login = useAppStore((state) => state.login);
   const navigate = useNavigate();
   const rippleRef = useRef<HTMLDivElement>(null);
@@ -49,8 +52,11 @@ export const Login = () => {
     const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
 
     if (username === envUsername && password === envPassword) {
-      login(username);
-      navigate('/');
+      setIsRippling(true);
+      setTimeout(() => {
+        login(username);
+        navigate('/');
+      }, 800);
     } else {
       setError('Tài khoản hoặc mật khẩu không chính xác.');
     }
@@ -122,12 +128,48 @@ export const Login = () => {
               />
             </div>
             {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-            <Button type="submit" className="w-full transition-transform hover:-translate-y-0.5 active:scale-95 duration-200">
+            <Button 
+              type="submit" 
+              className="w-full transition-transform hover:-translate-y-0.5 active:scale-95 duration-200"
+              onClick={(e) => {
+                if (e.clientX && e.clientY) {
+                  clickPosRef.current = { x: e.clientX, y: e.clientY };
+                }
+              }}
+            >
               Đăng nhập
             </Button>
           </form>
         </CardContent>
       </Card>
+
+      <AnimatePresence>
+        {isRippling && (
+          <motion.div
+            initial={{ 
+              width: 0, 
+              height: 0, 
+              opacity: 0.5,
+              top: clickPosRef.current.y,
+              left: clickPosRef.current.x,
+              x: '-50%',
+              y: '-50%',
+              borderRadius: '50%'
+            }}
+            animate={{ 
+              width: '300vw', 
+              height: '300vw', 
+              opacity: 1,
+              borderRadius: '50%'
+            }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed z-[100] pointer-events-none bg-background"
+            style={{
+              boxShadow: "0 0 50px rgba(0,0,0,0.2)"
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

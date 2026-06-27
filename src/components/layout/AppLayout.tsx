@@ -10,6 +10,7 @@ import {
   Store
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export const AppLayout = () => {
   const { auth, logout, config } = useAppStore();
@@ -27,7 +28,12 @@ export const AppLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-transparent flex relative">
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-transparent flex relative"
+    >
       {/* Sidebar */}
       <aside className="w-64 bg-background/40 backdrop-blur-xl border-r flex flex-col hidden md:flex shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 relative">
         <div className="p-6 border-b">
@@ -97,6 +103,6 @@ export const AppLayout = () => {
           <Outlet />
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 };
