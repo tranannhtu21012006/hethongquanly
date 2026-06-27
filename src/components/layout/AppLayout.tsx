@@ -6,6 +6,7 @@ import {
   Package,
   ArrowRightLeft,
   Settings,
+  ClipboardCheck,
   LogOut,
   Store
 } from 'lucide-react';
@@ -24,6 +25,7 @@ export const AppLayout = () => {
     { name: 'Tổng quan', path: '/', icon: LayoutDashboard },
     { name: 'Mặt hàng', path: '/products', icon: Package },
     { name: 'Kho hàng', path: '/inventory', icon: ArrowRightLeft },
+    { name: 'Kiểm kho', path: '/audit', icon: ClipboardCheck },
     { name: 'Cài đặt', path: '/settings', icon: Settings },
   ];
 

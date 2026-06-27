@@ -5,6 +5,7 @@ import { Login } from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
 import { Products } from '@/pages/Products';
 import { Inventory } from '@/pages/Inventory';
+import { Audit } from '@/pages/Audit';
 import { Settings } from '@/pages/Settings';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -39,6 +40,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="products" element={<Products />} />
             <Route path="inventory" element={<Inventory />} />
+            <Route path="audit" element={<Audit />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

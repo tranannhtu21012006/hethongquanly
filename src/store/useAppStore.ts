@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product, Transaction, ShopConfig, UserAuth } from '../types';
+import { Product, Transaction, ShopConfig, UserAuth, InventoryCheck } from '../types';
 import { supabase } from '../lib/supabase';
 
 interface AppState {
@@ -36,6 +36,10 @@ interface AppState {
   addTransaction: (transaction: Transaction) => void;
   deleteTransactions: (transactionIds: string[]) => void;
   
+  // Inventory Checks
+  inventoryChecks: InventoryCheck[];
+  addInventoryCheck: (check: InventoryCheck) => void;
+
   // Data Management
   exportData: () => string;
   importData: (jsonData: string) => boolean;
@@ -272,6 +276,46 @@ export const useAppStore = create<AppState>()(
         }
       },
 
+      inventoryChecks: [],
+      addInventoryCheck: async (check) => {
+        set((state) => {
+          const newProducts = state.products.map(p => {
+            const hasChanges = check.items.some(item => item.productId === p.id);
+            if (!hasChanges) return p;
+            
+            return {
+              ...p,
+              variants: p.variants.map(v => {
+                const checkItem = check.items.find(item => item.variantId === v.id);
+                if (checkItem) {
+                  return { ...v, stock: checkItem.actualStock };
+                }
+                return v;
+              })
+            };
+          });
+
+          return {
+            inventoryChecks: [check, ...state.inventoryChecks],
+            products: newProducts,
+          };
+        });
+
+        const { error } = await supabase.from('inventory_checks').insert({
+          id: check.id,
+          created_at: check.createdAt,
+          note: check.note,
+          items: check.items,
+        });
+        if (error) console.error('Failed to add inventory check:', error);
+        
+        for (const item of check.items) {
+          if (item.diff !== 0) {
+             await supabase.from('product_variants').update({ stock: item.actualStock }).eq('id', item.variantId);
+          }
+        }
+      },
+
       exportData: () => {
         const state = get();
         return JSON.stringify({
@@ -279,6 +323,7 @@ export const useAppStore = create<AppState>()(
           products: state.products,
           transactions: state.transactions,
           categories: state.categories,
+          inventoryChecks: state.inventoryChecks,
         });
       },
       importData: (jsonData: string) => {
@@ -290,6 +335,7 @@ export const useAppStore = create<AppState>()(
             products: data.products || [],
             transactions: data.transactions || [],
             categories: data.categories || state.categories,
+            inventoryChecks: data.inventoryChecks || [],
           }));
           return true;
         } catch (error) {
@@ -308,12 +354,14 @@ export const useAppStore = create<AppState>()(
             { data: productRows },
             { data: variantRows },
             { data: transactionRows },
+            { data: checkRows },
           ] = await Promise.all([
             supabase.from('shop_config').select('*').limit(1),
             supabase.from('categories').select('*').order('name'),
             supabase.from('products').select('*').order('name'),
             supabase.from('product_variants').select('*'),
             supabase.from('transactions').select('*').order('created_at', { ascending: true }),
+            supabase.from('inventory_checks').select('*').order('created_at', { ascending: false }),
           ]);
 
           const cfg = configRows?.[0];
@@ -343,7 +391,14 @@ export const useAppStore = create<AppState>()(
             date: t.created_at,
           }));
 
-          set({ config, categories, products, transactions, isLoading: false });
+          const inventoryChecks: InventoryCheck[] = (checkRows || []).map((c: any) => ({
+            id: c.id,
+            createdAt: c.created_at,
+            note: c.note,
+            items: c.items,
+          }));
+
+          set({ config, categories, products, transactions, inventoryChecks, isLoading: false });
         } catch (err) {
           console.error('Failed to fetch data from Supabase:', err);
           set({ isLoading: false });

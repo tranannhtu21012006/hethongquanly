@@ -45,3 +45,18 @@ export interface UserAuth {
   isAuthenticated: boolean;
   username: string;
 }
+
+export interface InventoryCheckItem {
+  productId: string;
+  variantId: string;
+  expectedStock: number;
+  actualStock: number;
+  diff: number;
+}
+
+export interface InventoryCheck {
+  id: string;
+  createdAt: string;
+  note: string;
+  items: InventoryCheckItem[];
+}
