@@ -17,8 +17,10 @@ interface AppState {
   currency: 'VND' | 'JPY';
   toggleCurrency: () => void;
 
-  // Loading
+  // Loading & Connection Status
   isLoading: boolean;
+  isOffline: boolean;
+  lastSyncedAt: string | null;
 
   // Categories
   categories: string[];
@@ -44,8 +46,9 @@ interface AppState {
   exportData: () => string;
   importData: (jsonData: string) => boolean;
 
-  // Sync
+  // Sync & Keep-alive
   fetchAllData: () => Promise<void>;
+  keepAlive: () => Promise<void>;
 }
 
 const defaultConfig: ShopConfig = {
@@ -89,6 +92,9 @@ export const useAppStore = create<AppState>()(
       auth: { isAuthenticated: false, username: '' },
       login: (username) => set({ auth: { isAuthenticated: true, username } }),
       logout: () => set({ auth: { isAuthenticated: false, username: '' } }),
+
+      isOffline: false,
+      lastSyncedAt: null,
 
       config: defaultConfig,
       updateConfig: (newConfig) => {
@@ -349,12 +355,12 @@ export const useAppStore = create<AppState>()(
         set({ isLoading: true });
         try {
           const [
-            { data: configRows },
-            { data: categoryRows },
-            { data: productRows },
-            { data: variantRows },
-            { data: transactionRows },
-            { data: checkRows },
+            { data: configRows, error: configErr },
+            { data: categoryRows, error: catErr },
+            { data: productRows, error: prodErr },
+            { data: variantRows, error: varErr },
+            { data: transactionRows, error: txErr },
+            { data: checkRows, error: checkErr },
           ] = await Promise.all([
             supabase.from('shop_config').select('*').limit(1),
             supabase.from('categories').select('*').order('name'),
@@ -363,6 +369,18 @@ export const useAppStore = create<AppState>()(
             supabase.from('transactions').select('*').order('created_at', { ascending: true }),
             supabase.from('inventory_checks').select('*').order('created_at', { ascending: false }),
           ]);
+
+          // Check if Supabase is unavailable (paused or network error)
+          const hasError = configErr || catErr || prodErr || varErr || txErr || checkErr;
+          if (hasError) {
+            console.warn('⚠️ Supabase không khả dụng. Sử dụng dữ liệu đã lưu cache.', {
+              configErr, catErr, prodErr, varErr, txErr, checkErr,
+            });
+            // Keep cached data from localStorage (already hydrated by zustand persist)
+            // Don't overwrite state with empty arrays
+            set({ isLoading: false, isOffline: true });
+            return;
+          }
 
           const cfg = configRows?.[0];
           const config: ShopConfig = cfg ? {
@@ -398,19 +416,46 @@ export const useAppStore = create<AppState>()(
             items: c.items,
           }));
 
-          set({ config, categories, products, transactions, inventoryChecks, isLoading: false });
+          set({
+            config, categories, products, transactions, inventoryChecks,
+            isLoading: false,
+            isOffline: false,
+            lastSyncedAt: new Date().toISOString(),
+          });
         } catch (err) {
           console.error('Failed to fetch data from Supabase:', err);
-          set({ isLoading: false });
+          // Keep cached data, mark as offline
+          set({ isLoading: false, isOffline: true });
+        }
+      },
+
+      // Keep-alive ping to prevent Supabase from pausing the project
+      keepAlive: async () => {
+        try {
+          const { error } = await supabase.from('shop_config').select('id').limit(1);
+          if (!error) {
+            console.log('✅ Keep-alive ping thành công:', new Date().toLocaleString());
+          } else {
+            console.warn('⚠️ Keep-alive ping thất bại:', error.message);
+          }
+        } catch (e) {
+          console.warn('⚠️ Keep-alive ping lỗi:', e);
         }
       },
     }),
     {
       name: 'clothes-shop-storage',
-      // Only persist auth and currency locally (UI settings)
+      // Persist all data locally as backup cache
+      // When Supabase is unavailable, app will show this cached data
       partialize: (state) => ({
         auth: state.auth,
         currency: state.currency,
+        config: state.config,
+        categories: state.categories,
+        products: state.products,
+        transactions: state.transactions,
+        inventoryChecks: state.inventoryChecks,
+        lastSyncedAt: state.lastSyncedAt,
       } as any),
     }
   )

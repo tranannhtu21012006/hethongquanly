@@ -126,7 +126,7 @@ export const Products = () => {
     if (currency === 'JPY') {
       return `¥${Math.round(priceVnd / config.exchangeRate).toLocaleString()}`;
     }
-    return `${priceVnd.toLocaleString()} đ`;
+    return `${priceVnd.toLocaleString()} JPY`;
   };
 
   const handleAddCategory = () => {

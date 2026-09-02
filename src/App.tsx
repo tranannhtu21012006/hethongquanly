@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Login } from '@/pages/Login';
@@ -10,12 +10,33 @@ import { Settings } from '@/pages/Settings';
 import { useAppStore } from '@/store/useAppStore';
 
 import { Effects } from '@/components/ui/Effects';
+import { OfflineBanner } from '@/components/ui/OfflineBanner';
+
+// Keep-alive interval: ping Supabase every 4 hours to prevent project pausing
+const KEEP_ALIVE_INTERVAL = 4 * 60 * 60 * 1000;
 
 function App() {
   const fetchAllData = useAppStore((s) => s.fetchAllData);
+  const keepAlive = useAppStore((s) => s.keepAlive);
   const isLoading = useAppStore((s) => s.isLoading);
+  const isOffline = useAppStore((s) => s.isOffline);
 
+  // Fetch data on startup
   useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
+
+  // Keep-alive ping: runs every 4 hours while the app is open
+  useEffect(() => {
+    const interval = setInterval(() => {
+      keepAlive();
+    }, KEEP_ALIVE_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [keepAlive]);
+
+  // Retry connection when user clicks retry
+  const handleRetry = useCallback(() => {
     fetchAllData();
   }, [fetchAllData]);
 
@@ -33,6 +54,7 @@ function App() {
   return (
     <>
       <Effects />
+      {isOffline && <OfflineBanner onRetry={handleRetry} />}
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

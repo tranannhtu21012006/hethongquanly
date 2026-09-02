@@ -27,7 +27,7 @@ export const Inventory = () => {
     if (currency === 'JPY') {
       return `¥${Math.round(priceVnd / config.exchangeRate).toLocaleString()}`;
     }
-    return `${priceVnd.toLocaleString()} đ`;
+    return `${priceVnd.toLocaleString()} JPY`;
   };
 
   const calculateTotalOut = () => {
@@ -141,8 +141,8 @@ export const Inventory = () => {
                   <label className="text-sm font-medium">Số lượng</label>
                   <Input 
                     type="number" min="1" 
-                    value={quantity} 
-                    onChange={e => setQuantity(Number(e.target.value))} 
+                    value={quantity === 0 ? '' : quantity} 
+                    onChange={e => setQuantity(e.target.value === '' ? 0 : Number(e.target.value))} 
                     required 
                   />
                 </div>
@@ -162,8 +162,8 @@ export const Inventory = () => {
                     </div>
                     <Input 
                       type="number" min="0" 
-                      value={importPrice} 
-                      onChange={e => setImportPrice(Number(e.target.value))} 
+                      value={importPrice === 0 ? '' : importPrice} 
+                      onChange={e => setImportPrice(e.target.value === '' ? 0 : Number(e.target.value))} 
                       placeholder={`Nhập giá theo ${importCurrency}`}
                     />
                   </div>
@@ -184,8 +184,8 @@ export const Inventory = () => {
                     </div>
                     <Input 
                       type="number" min="0" 
-                      value={discount} 
-                      onChange={e => setDiscount(Number(e.target.value))} 
+                      value={discount === 0 ? '' : discount} 
+                      onChange={e => setDiscount(e.target.value === '' ? 0 : Number(e.target.value))} 
                       placeholder={`Nhập chiết khấu theo ${discountCurrency}`}
                     />
                   </div>
