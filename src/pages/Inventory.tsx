@@ -205,7 +205,9 @@ export const Inventory = () => {
                 <div className="p-4 bg-muted rounded-lg flex justify-between items-center">
                   <span className="font-semibold">Tổng chi phí nhập:</span>
                   <span className="text-xl font-bold text-destructive">
-                    {displayPrice((importCurrency === 'JPY' ? importPrice * config.exchangeRate : importPrice) * quantity)}
+                    {importCurrency === 'JPY' 
+                      ? `¥${(importPrice * quantity).toLocaleString()}` 
+                      : `${(importPrice * quantity).toLocaleString()} VND`}
                   </span>
                 </div>
               )}
